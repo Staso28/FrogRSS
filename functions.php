@@ -7,7 +7,7 @@ function _fE() {
 }
 
 function _footer() {
-	echo "<center><small>TBD: footer</small></center>";
+	echo "<center><small>Still in Beta stage. Source on <a href=\"https://github.com/Staso28/FrogRSS\" target=\"_blank\" rel=\"noopener noreferrer\">GitHub</a>.</small></center>";
 }
 
 // check dangerous characters before inserting data into database

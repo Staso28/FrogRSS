@@ -161,4 +161,5 @@ if($rist) echo "</ol>";
 else echo "<p>Oh...I'm sorry. No articles found. Try to fetch new articles with the link top right...";
 ?>
 </font>
+<?php _footer(); ?>
 </body></html>

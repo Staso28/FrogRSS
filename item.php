@@ -103,6 +103,7 @@ echo "<small>Original URL: <a href=\"".$row["permalink"]."\" target=\"_blank\" r
 if ($row["thumbnail"]) { echo "<p><img src=\"img.php?i=".$row["thumbnail"]."\" /></p>"; }
 // article
 echo "<p>"._fB().$row["description"]._fE()."<p><small>Posted on:".$row["publishDate"]."</small>";
-
+// footer
+_footer();
 ?>
 </body></html>
