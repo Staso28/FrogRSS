@@ -1,4 +1,11 @@
 <?php
+function _fB($size = 4) {
+    return "<font size=\"".$size."\">";
+}
+function _fE() {
+    return "</font>";
+}
+
 function _footer() {
 	echo "<center><small>TBD: footer</small></center>";
 }

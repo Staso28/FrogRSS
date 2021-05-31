@@ -6,6 +6,7 @@
 <body link="blue" vlink="blue" alink="blue">
 <?php
 require_once("dbconn.php");
+require_once("functions.php");
 require_once("check_session.php");
 
 if (isset($_GET['feedId'])) {
@@ -67,7 +68,7 @@ $cmd = "SELECT name FROM feeds WHERE id = ".$feedId;
 $res = $dbh->query($cmd);
 $row = $res->fetch_assoc();
 echo "<h2>".$row["name"]."</h2>";
-echo "<a href=\"show_items.php?feedId=".$feedId."\">&lt;&lt; Back to the feed</a>";
+echo _fB()."<a href=\"show_items.php?feedId=".$feedId."\">&lt;&lt; Back to the feed</a>"._fE();
 
 // select item data
 $cmd = "SELECT i.*, ri.status+0 as status FROM items i JOIN reader_items ri ON ri.readerId=".$readerId." and ri.feedId=i.feedId and ri.itemId=i.id WHERE i.id='".$itemId."' and i.feedId=".$feedId;
@@ -83,21 +84,25 @@ if ($row["status"] == RI_UNREAD) {
 
 // display item
 echo "<hr><h3><a href=\"http://frogfind.com/read.php?a=".$row["permalink"]."\">".$row["title"]."</a></h3>";
-echo "<font size=\"4\">";
-echo "Actions: <a href=\"item.php?feedId=".$feedId."&itemId=".$itemId."&action=u\">[ Mark as unread ]</a> ";
-echo "<a href=\"item.php?feedId=".$feedId."&itemId=".$itemId."&action=d\">[ Delete article ]</a> ";
+echo "<table width=\"100%\">".
+    "<tr><td>".
+        _fB()."Actions: <a href=\"item.php?feedId=".$feedId."&itemId=".$itemId."&action=u\">[ Mark as unread ]</a> ".
+        "<a href=\"item.php?feedId=".$feedId."&itemId=".$itemId."&action=d\">[ Delete article ]</a>"._fE()."</td>".
+        "<td align=\"right\">"._fB();
 // previous article
 $prevItemId = find_next('<', $row["publishDate"], $feedId, $dbh, $readerId);
 if ($prevItemId) echo "<a href=\"item.php?feedId=".$feedId."&itemId=".$prevItemId."\">[ &lt;&lt; Older article ]</a> ";
 // next article
 $nextItemId = find_next('>', $row["publishDate"], $feedId, $dbh, $readerId);
 if ($nextItemId) echo "<a href=\"item.php?feedId=".$feedId."&itemId=".$nextItemId."\">[ Newer article &gt;&gt; ]</a> ";
-echo "<br>";
-echo "Original URL: <a href=\"".$row["permalink"]."\" target=\"_blank\" rel=\"noopener noreferrer\">".$row["permalink"]."</a>";
-echo "</font>";
+echo _fE()."</td></tr></table>";
 
+echo "<small>Original URL: <a href=\"".$row["permalink"]."\" target=\"_blank\" rel=\"noopener noreferrer\">".$row["permalink"]."</a></small>";
+
+// show thumbnail
 if ($row["thumbnail"]) { echo "<p><img src=\"img.php?i=".$row["thumbnail"]."\" /></p>"; }
-echo "<p><font size=\"4\">".$row["description"]."</font><p><small>Posted on:".$row["publishDate"]."</small>";
+// article
+echo "<p>"._fB().$row["description"]._fE()."<p><small>Posted on:".$row["publishDate"]."</small>";
 
 ?>
 </body></html>
