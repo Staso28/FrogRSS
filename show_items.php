@@ -37,7 +37,8 @@ if ($action == "all_read") {
 	$cmd = "UPDATE reader_items SET status='read' WHERE readerId=".$readerId." and feedId=".$feedId." and status='unread'";
 	$ok = $dbh->query($cmd);
 	if ($ok) {
-		echo "All articles marked as Read sucessfully.<p><a href=\"show_items.php?feedId=".$feedId."\">&lt;&lt; Back to the feed...</a></body></html>";
+		echo "All articles marked as Read sucessfully.<p>";
+	    echo "<font size=\"4\"><a href=\"feeds.php#cat_".$feedCatId."\">&lt;&lt; Back to feed list</a></font></body></html>";
 	} else {
 		echo "Error: Unable to mark all articles.";
 	}	

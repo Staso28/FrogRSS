@@ -18,11 +18,17 @@ if (isset($_GET['action'])) {
 	$action = $_GET['action'];
 }
 
-if ($action == "all_read") {
+if ($action == "allRead") {
+    echo "<font size=\"4\">Do you really want to mark all articles?<p>";
+    echo "<a href=\"feeds.php\">[ No, take me back ]</a> ";
+    echo "<a href=\"feeds.php?action=doAllRead\">[ Yes, mark them all ]</a> ";
+    echo "</font></body></html>";
+    exit;
+} else if ($action == "doAllRead") {
 	$cmd = "UPDATE reader_items SET status='read' WHERE readerId=".$readerId." and status='unread'";
 	$ok = $dbh->query($cmd);
 	if ($ok) {
-		echo "All articles marked as Read sucessfully.<p><a href=\"feeds.php\">Back to the feed...</a></body></html>";
+		echo "<font size=\"4\">All articles marked as Read sucessfully.<p><a href=\"feeds.php\">Back to the feed...</a></font></body></html>";
 	} else {
 		echo "Error: Unable to mark all articles.";
 	}	
@@ -42,7 +48,7 @@ if ($action == "all_read") {
 </table>
 Actions: 
 <!--<a href="fetch_items.php">[ Fetch articles for all feeds ]</a> -->
-<a href="feeds.php?action=all_read">[ Mark all as Read ]</a>
+<a href="feeds.php?action=allRead">[ Mark all as Read ]</a>
 <?php
 $cmd = "SELECT c.name as cat_name, if(isnull(rf.feedName),f.name,rf.feedName) as feed_name, url, rf.categoryId, f.id, ".
 	"sum(if(isnull(ri.itemId),0,1)) as itemCount, ".
