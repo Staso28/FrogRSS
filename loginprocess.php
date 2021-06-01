@@ -7,10 +7,22 @@ if(isset($_REQUEST['sub']))
 {
 	$a = $_REQUEST['uname'];
 	$b = $_REQUEST['upassword'];
+    // check login name
+    if (!_check_db_input($a)) {
+		header("location:login.php?err=1");
+        exit;
+    }
+    // hash password
+    $b = sha1($b);
+
+	$stm = $dbh->prepare("select id from readers where login=? and cpasswd=?");
+    $stm->bind_param('ss', $a, $b);
+    $stm->execute();
+    $res = $stm->get_result();
 	
-	$cmd = "select id from readers where login='".$a."'and cpasswd='".sha1($b)."'";
+	//$cmd = "select id from readers where login='".$a."'and cpasswd='".sha1($b)."'";
 //echo "cmd:".$cmd;
-	$res = $dbh->query($cmd);
+	//$res = $dbh->query($cmd);
 	$result=$res->fetch_assoc();
 	if($result) {
 		$_SESSION["login"]="1";

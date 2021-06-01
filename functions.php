@@ -12,7 +12,7 @@ function _footer() {
 
 // check dangerous characters before inserting data into database
 function _check_db_input($inputString) {
-	if (preg_match('/[\'"\$\^\*]/', $inputString)) {
+	if (preg_match('/[%;\'"\$\^\*]/', $inputString)) {
 		return 0;
 	}
 	return 1;
