@@ -9,7 +9,16 @@ require_once("dbconn.php");
 require_once("functions.php");
 
 $feedId = 0;
-if (isset($_GET['feedId'])) { $feedId = $_GET['feedId']; }
+if (isset($_GET['feedId'])) { 
+    $feedId = $_GET['feedId'];
+    // check if integer
+    if (!ctype_digit($feedId)) {
+        echo "Wrong feedId";
+        exit;
+    }
+}
+
+
 
 // simplepie
 require_once('php/autoloader.php');
@@ -73,6 +82,7 @@ while ($row = $res->fetch_assoc()) {
 		// item id unique
 		$itemId = $item->get_id(true);
 		// nebudeme zistovat ci uz je, rovno urobime insert ignore
+        // TODO: prepared statement
 		$cmd = "INSERT IGNORE INTO items SET id='".$itemId."', feedId=".$row["id"].", ".
 			"title='".$title."', permalink='".$item->get_permalink()."', ".
 			"description='".$idesc."', publishDate='".$item->get_gmdate('Y-m-d H:i:s')."', ".
