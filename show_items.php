@@ -16,6 +16,11 @@ if (isset($_GET['feedId'])) {
 	exit;
 }
 
+if (!ctype_digit($feedId)) {
+    echo "Wrong feedId";
+    exit;
+}
+
 $action = "";
 if (isset($_GET['action'])) {
 	$action = $_GET['action'];
@@ -83,8 +88,15 @@ echo "<h2>".$feedName."</h2>";
 // move feed to a new category
 if (isset($_REQUEST['doChangeCat'])) {
 	$newCategoryId = $_REQUEST['newCat'];
-	$cmd = "update reader_feeds set categoryId=".$newCategoryId." where feedId=".$feedId." and readerId=".$readerId;
-	$ok = $dbh->query($cmd);
+    if (!ctype_digit($newCategoryId)) {
+        echo "Wrong categoryId</body></html>";
+        exit;
+    }
+	$stm = $dbh->prepare("UPDATE reader_feeds SET categoryId=? where feedId=? and readerId=?");
+    $stm->bind_param('ddd', $newCategoryId, $feedId, $readerId);
+    $ok = $stm->execute();
+	//$cmd = "update reader_feeds set categoryId=".$newCategoryId." where feedId=".$feedId." and readerId=".$readerId;
+	//$ok = $dbh->query($cmd);
 	if ($ok) {
 		echo "Feed sucessfully moved to new category.<p>";
 		echo "<a href=\"feeds.php#cat_".$newCategoryId."\">&lt;&lt; Back to feed list</a>";
