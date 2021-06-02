@@ -19,16 +19,16 @@ if (isset($_GET['action'])) {
 }
 
 if ($action == "allRead") {
-    echo "<font size=\"4\">Do you really want to mark all articles?<p>";
+    echo _fB()."Do you really want to mark all articles?<p>";
     echo "<a href=\"feeds.php\">[ No, take me back ]</a> ";
     echo "<a href=\"feeds.php?action=doAllRead\">[ Yes, mark them all ]</a> ";
-    echo "</font></body></html>";
+    echo _fE()."</body></html>";
     exit;
 } else if ($action == "doAllRead") {
 	$cmd = "UPDATE reader_items SET status='read' WHERE readerId=".$readerId." and status='unread'";
 	$ok = $dbh->query($cmd);
 	if ($ok) {
-		echo "<font size=\"4\">All articles marked as Read sucessfully.<p><a href=\"feeds.php\">Back to the feed...</a></font></body></html>";
+		echo _fB()."All articles marked as Read sucessfully.<p><a href=\"feeds.php\">Back to the feed...</a>"._fE()."</body></html>";
 	} else {
 		echo "Error: Unable to mark all articles.";
 	}	
@@ -40,15 +40,19 @@ if ($action == "allRead") {
 <tr><td>
 <h2>My feeds</h2>
 </td><td align="right" valign="top">
+<font size="4">
 <a href="add_feed.php">[ Add RSS feed ]</a> 
 <a href="categories.php">[ Manage categories ]</a> 
 [ My profile ] 
 <a href="logout.php">Logout</a>
+</font>
 </td></tr>
 </table>
+<font size="4">
 Actions: 
 <!--<a href="fetch_items.php">[ Fetch articles for all feeds ]</a> -->
 <a href="feeds.php?action=allRead">[ Mark all as Read ]</a>
+</font>
 <?php
 $cmd = "SELECT c.name as cat_name, if(isnull(rf.feedName),f.name,rf.feedName) as feed_name, url, rf.categoryId, f.id, ".
 	"sum(if(isnull(ri.itemId),0,1)) as itemCount, ".
@@ -60,14 +64,14 @@ $cmd = "SELECT c.name as cat_name, if(isnull(rf.feedName),f.name,rf.feedName) as
 	"WHERE isnull(ri.status) or ri.status <> 'deleted' ".
 	"GROUP by f.id ORDER BY c.ordering, f.id";
 $res = $dbh->query($cmd);
-if (!$res) echo $cmd;
+//if (!$res) echo $cmd;
 
 $cat = "";
 while ($row = $res->fetch_assoc()) {
 	if ($cat != $row["categoryId"]) {
-		if ($cat != "")  print "</font></ul>";
+		if ($cat != "")  print _fE()."</ul>";
 		print "<h3><a name=\"cat_".$row["categoryId"]."\">".$row["cat_name"]."</a></h3>";
-        echo "<font size=\"4\"><ul>";
+        echo _fB()."<ul>";
 		$cat = $row["categoryId"];
 	}
 	//print("<li></li>\n");

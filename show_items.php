@@ -9,6 +9,8 @@ require_once("functions.php");
 require_once("dbconn.php");
 require_once("check_session.php");
 
+//mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
 if (isset($_GET['feedId'])) {
 	$feedId = sprintf("%d",$_GET['feedId']);
 } else {
@@ -20,13 +22,17 @@ $action = "";
 if (isset($_GET['action'])) {
 	$action = $_GET['action'];
 }
-
 $cmd = "SELECT f.name, rf.categoryId, f.fetchTime, c.name as catName ".
 	"FROM feeds f ".
-	"INNER JOIN reader_feeds rf ON f.id=rf.feedId AND rf.readerId=".$readerId." ".
+	"INNER JOIN reader_feeds rf ON f.id=rf.feedId AND rf.readerId=? ".
 	"LEFT JOIN categories c ON rf.categoryId=c.id AND rf.readerId=c.readerId ".
-	"WHERE f.id = ".$feedId;
-$res = $dbh->query($cmd);
+	"WHERE f.id=?";
+$stm = $dbh->prepare($cmd);
+$stm->bind_param('ii', $readerId, $feedId);
+$stm->execute();
+$res = $stm->get_result();
+$stm->close();
+
 $row = $res->fetch_assoc();
 $feedName = $row["name"];
 $feedCatId = $row["categoryId"];
@@ -34,19 +40,22 @@ $feedFetchTime = $row["fetchTime"];
 $categoryName = $row["catName"];
 
 if ($action == "all_read") {
-	$cmd = "UPDATE reader_items SET status='read' WHERE readerId=".$readerId." and feedId=".$feedId." and status='unread'";
-	$ok = $dbh->query($cmd);
+	$stm = $dbh->prepare("UPDATE reader_items SET status='read' WHERE readerId=? and feedId=? and status='unread'");
+    $stm->bind_param('ii', $readerId, $feedId);
+    $ok = $stm->execute();
 	if ($ok) {
+        $stm->close();
 		echo "All articles marked as Read sucessfully.<p>";
-	    echo "<font size=\"4\"><a href=\"feeds.php#cat_".$feedCatId."\">&lt;&lt; Back to feed list</a></font></body></html>";
+	    echo _fB()."<a href=\"feeds.php#cat_".$feedCatId."\">&lt;&lt; Back to feed list</a>"._fE()."</body></html>";
 	} else {
 		echo "Error: Unable to mark all articles.";
 	}	
 	exit;
 }
 else if ($action == "all_unread") {
-	$cmd = "UPDATE reader_items SET status='unread' WHERE readerId=".$readerId." and feedId=".$feedId." and status='read'";
-	$ok = $dbh->query($cmd);
+	$stm = $dbh->prepare("UPDATE reader_items SET status='unread' WHERE readerId=? and feedId=? and status='read'");
+    $stm->bind_param('ii', $readerId, $feedId);
+    $ok = $stm->execute();
 	if ($ok) {
 		echo "All articles marked as Unread sucessfully.<p><a href=\"show_items.php?feedId=".$feedId."\">&lt;&lt; Back to the feed...</a></body></html>";
 	} else {
@@ -63,10 +72,12 @@ else if ($action == "unsub") {
 }
 // really unsubscibe from feed :-)
 else if ($action == "unsub_ok") {
-	$cmd = "DELETE FROM reader_items WHERE feedId=".$feedId." and readerId=".$readerId;
-	$ok1 = $dbh->query($cmd);
-	$cmd = "DELETE FROM reader_feeds WHERE feedId=".$feedId." and readerId=".$readerId;
-	$ok2 = $dbh->query($cmd);
+	$stm1 = $dbh->prepare("DELETE FROM reader_items WHERE readerId=? and feedId=?");
+    $stm1->bind_param('ii', $readerId, $feedId);
+    $ok1 = $stm1->execute();
+	$stm2 = $dbh->prepare("DELETE FROM reader_feeds WHERE readerId=? and feedId=?");
+    $stm2->bind_param('ii', $readerId, $feedId);
+    $ok2 = $stm2->execute();
 	if ($ok1 and $ok2) {
 		echo "Sucessfully unsubscribed...<p>";
 	} else {
@@ -88,10 +99,8 @@ if (isset($_REQUEST['doChangeCat'])) {
         exit;
     }
 	$stm = $dbh->prepare("UPDATE reader_feeds SET categoryId=? where feedId=? and readerId=?");
-    $stm->bind_param('ddd', $newCategoryId, $feedId, $readerId);
+    $stm->bind_param('iii', $newCategoryId, $feedId, $readerId);
     $ok = $stm->execute();
-	//$cmd = "update reader_feeds set categoryId=".$newCategoryId." where feedId=".$feedId." and readerId=".$readerId;
-	//$ok = $dbh->query($cmd);
 	if ($ok) {
 		echo "Feed sucessfully moved to new category.<p>";
 		echo "<a href=\"feeds.php#cat_".$newCategoryId."\">&lt;&lt; Back to feed list</a>";
@@ -100,14 +109,12 @@ if (isset($_REQUEST['doChangeCat'])) {
 	}
 }
 
-echo "<font size=\"4\">";
-echo "<a href=\"feeds.php#cat_".$feedCatId."\">&lt;&lt; Back to feed list</a>";
-echo "</font>\n";
+echo _fB()."<a href=\"feeds.php#cat_".$feedCatId."\">&lt;&lt; Back to feed list</a>"._fE();
 
 // show dialog for choosing new category
 if ($action == "catChangeReq") {
-	echo "<p><font size=\"4\">".
-		"<form method=\"POST\" action=\"show_items.php?feedId=".$feedId."\">".
+	echo "<p>".
+		_fB()."<form method=\"POST\" action=\"show_items.php?feedId=".$feedId."\">".
 		"Current category: <b>".$categoryName."</b><p>".
 		"New category: <select name=\"newCat\">".
 		_combo_options_categories($dbh, $readerId).
@@ -118,29 +125,31 @@ if ($action == "catChangeReq") {
 }
 
 echo "<p>";
-echo "<table width=\"100%\"><tr><td><font size=\"4\">";
+echo "<table width=\"100%\"><tr><td>"._fB();
 echo "Actions: ";
 echo "<a href=\"show_items.php?feedId=".$feedId."&action=all_read\">[ Mark all as Read ]</a> ";
 echo "<a href=\"show_items.php?feedId=".$feedId."&action=all_unread\">[ Mark all as Unread ]</a>";
-echo "</font></td><td align=\"right\"><font size=\"4\">";
+echo _fE()."</td><td align=\"right\">"._fB();
 echo "<a href=\"show_items.php?feedId=".$feedId."&action=unsub\">[ Unsubscribe from Feed ]</a> ";
 echo "<a href=\"fetch_items.php?feedId=".$feedId."\">[ Fetch new articles ]</a>";
-echo "</font></td></tr></table>\n";
+echo _fE()."</td></tr></table>\n";
 echo "<p>";
 
 echo "<table width=\"100%\"><tr>".
 	"<td><small>Category: <b>".$categoryName."</b> (<a href=\"show_items.php?feedId=".$feedId."&action=catChangeReq\">Change</a>)</small></td>".
 	"<td align=\"right\"><small>Last refresh: ".$feedFetchTime."</small></td>".
-	"</tr></table><p>";
-echo "<font size=\"4\">";
+	"</tr></table><p>"._fB();
 
-//TODO: zobrazit posledny cas kedy boli stiahnute clanky pre tento feed - last fetch time
 
 $cmd = "SELECT i.id,i.permalink,i.title,i.publishDate,ri.status+0 as status ".
 	"FROM items i ".
-	"LEFT JOIN reader_items ri ON ri.readerId=".$readerId." and i.feedId=ri.feedId and i.id=ri.itemId ".
-	"WHERE i.feedId=".$feedId." AND ri.status<>'deleted' ORDER BY ri.status, i.publishDate DESC";
-$res = $dbh->query($cmd);
+	"LEFT JOIN reader_items ri ON ri.readerId=? and i.feedId=ri.feedId and i.id=ri.itemId ".
+	"WHERE i.feedId=? AND ri.status<>'deleted' ORDER BY ri.status, i.publishDate DESC";
+$stm = $dbh->prepare($cmd);
+$stm->bind_param('ii', $readerId, $feedId);
+$stm->execute();
+$res = $stm->get_result();
+$stm->close();
 
 $rist="";
 while ($row = $res->fetch_assoc()) {

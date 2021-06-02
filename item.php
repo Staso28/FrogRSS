@@ -9,6 +9,8 @@ require_once("dbconn.php");
 require_once("functions.php");
 require_once("check_session.php");
 
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
 if (isset($_GET['feedId'])) {
 	$feedId = sprintf("%d",$_GET['feedId']);
 } else {
@@ -28,10 +30,13 @@ function find_next ( $oper, $date, $feedId, $dbh, $readerId) {
 	$sort = ($oper == ">") ? "ASC" : "DESC";
 	$cmd = "SELECT id ".
 		"FROM items i ".
-		"JOIN reader_items ri ON ri.readerId=".$readerId." and ri.feedId=i.feedId and ri.itemId=i.id ".
-		"WHERE ri.feedId=".$feedId." and ri.status<>'deleted' AND i.publishDate ".$oper." '".$date."'".
+		"JOIN reader_items ri ON ri.readerId=? and ri.feedId=i.feedId and ri.itemId=i.id ".
+		"WHERE ri.feedId=? and ri.status<>'deleted' AND i.publishDate ".$oper." ? ".
 		"ORDER BY publishDate ".$sort;
-	$res = $dbh->query($cmd);
+    $stm = $dbh->prepare($cmd);
+    $stm->bind_param('iis', $readerId, $feedId, $date);
+    $stm->execute();
+    $res = $stm->get_result();
 	$row = $res->fetch_assoc();
 	return $row["id"];
 }
@@ -44,8 +49,10 @@ $action = "";
 if (isset($_GET['action'])) $action = $_GET['action'];
 // set item as unread
 if ($action == "u") {
-	$cmd = "UPDATE reader_items SET status='unread' WHERE readerId=".$readerId." AND feedId=".$feedId." and itemId='".$itemId."'";
-	$ok = $dbh->query($cmd);
+	$cmd = "UPDATE reader_items SET status='unread' WHERE readerId=? AND feedId=? and itemId=?";
+    $stm = $dbh->prepare($cmd);
+    $stm->bind_param('iis', $readerId, $feedId, $itemId);
+    $ok = $stm->execute();
 	if (!$ok) echo "Warning: Unable to set as unread. readerId:".$readerId." feedId:".$feedId." itemId:".$itemId;
 	else {
 		echo "Article set as unread sucessfully.<p><a href=\"show_items.php?feedId=".$feedId."\">Back to the feed...</a></body></html>";
@@ -54,8 +61,10 @@ if ($action == "u") {
 }
 // delete readers item
 if ($action == "d") {
-	$cmd = "UPDATE reader_items SET status='deleted' WHERE readerId=".$readerId." AND feedId=".$feedId." and itemId='".$itemId."'";
-	$ok = $dbh->query($cmd);
+	$cmd = "UPDATE reader_items SET status='deleted' WHERE readerId=? AND feedId=? and itemId=?";
+    $stm = $dbh->prepare($cmd);
+    $stm->bind_param('iis', $readerId, $feedId, $itemId);
+    $ok = $stm->execute();
 	if (!$ok) echo "Warning: Unable to delete. readerId:".$readerId." feedId:".$feedId." itemId:".$itemId;
 	else {
 		echo "Article deleted.<p><a href=\"show_items.php?feedId=".$feedId."\">Back to the feed...</a></body></html>";
