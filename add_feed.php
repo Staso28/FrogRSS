@@ -19,7 +19,7 @@ if(isset($_REQUEST['doSave'])) {
 	$fname = $_REQUEST['fname'];
 	$ftitle = $_REQUEST['ftitle'];
 	$furl = $_REQUEST['furl'];
-	$cat = $_REQUEST['cat'];
+	$cat = sprintf("%d",$_REQUEST['cat']);
 	// check input strings
 	if (!_check_db_input($furl) or !_check_db_input($ftitle)) {
 		echo "<font color=\"red\">Wrong URL or feed name.</font><p><a href=\"feeds.php\">Back to feed list</a></body></html>";

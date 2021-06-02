@@ -16,7 +16,7 @@ require_once("dbconn.php");
 require_once("check_session.php");
 
 if (isset($_GET['id'])) {
-	$categoryId = $_GET['id'];
+	$categoryId = sprintf("%d",$_GET['id']);
 }
 if (isset($_GET['action'])) {
 	$action = $_GET['action'];

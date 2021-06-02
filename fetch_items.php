@@ -10,14 +10,9 @@ require_once("functions.php");
 
 $feedId = 0;
 if (isset($_GET['feedId'])) { 
-    $feedId = $_GET['feedId'];
-    // check if integer
-    if (!ctype_digit($feedId)) {
-        echo "Wrong feedId";
-        exit;
-    }
+    //$feedId = $_GET['feedId'];
+    $feedId = sprintf("%d",$_GET['feedId']);
 }
-
 
 
 // simplepie

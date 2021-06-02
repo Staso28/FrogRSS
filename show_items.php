@@ -10,15 +10,10 @@ require_once("dbconn.php");
 require_once("check_session.php");
 
 if (isset($_GET['feedId'])) {
-	$feedId = $_GET['feedId'];
+	$feedId = sprintf("%d",$_GET['feedId']);
 } else {
 	echo "Required feedId missing";
 	exit;
-}
-
-if (!ctype_digit($feedId)) {
-    echo "Wrong feedId";
-    exit;
 }
 
 $action = "";
