@@ -54,8 +54,10 @@ if(isset($_REQUEST["doReg"])) {
 	if ($regPassw != $regPassw2) $ok = _err("Password mismatch.");
 
 	if ($ok) {
-		$cmd = "INSERT INTO readers SET id=NULL, login='".$regLogin."', cpasswd='".sha1($regPassw)."'";
-		$db_ok = $dbh->query($cmd);
+        $cpass = sha1($regPassw);
+		$stm = $dbh->prepare("INSERT INTO readers SET id=NULL, login=?, cpasswd=?");
+        $stm->bind_param('ss', $regLogin, $cpass);
+        $db_ok = $stm->execute();
 		if ($db_ok) {
 			$readerId = $dbh->insert_id;
 			_set_starting_content($dbh, $readerId);

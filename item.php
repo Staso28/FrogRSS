@@ -73,22 +73,31 @@ if ($action == "d") {
 }
 
 // display article
-$cmd = "SELECT name FROM feeds WHERE id = ".$feedId;
-$res = $dbh->query($cmd);
+$stm = $dbh->prepare("SELECT name FROM feeds WHERE id = ?");
+$stm->bind_param('i', $feedId);
+$stm->execute();
+$res = $stm->get_result();
 $row = $res->fetch_assoc();
 echo "<h2>".$row["name"]."</h2>";
 echo _fB()."<a href=\"show_items.php?feedId=".$feedId."\">&lt;&lt; Back to the feed</a>"._fE();
 
 // select item data
-$cmd = "SELECT i.*, ri.status+0 as status FROM items i JOIN reader_items ri ON ri.readerId=".$readerId." and ri.feedId=i.feedId and ri.itemId=i.id WHERE i.id='".$itemId."' and i.feedId=".$feedId;
-$res = $dbh->query($cmd);
+$cmd = "SELECT i.*, ri.status+0 as status FROM items i JOIN reader_items ri ON ri.readerId=? and ri.feedId=i.feedId and ri.itemId=i.id WHERE i.id=? and i.feedId=?";
+$stm = $dbh->prepare($cmd);
+$stm->bind_param('isi', $readerId, $itemId, $feedId);
+$stm->execute();
+$res = $stm->get_result();
+$stm->close();
 $row = $res->fetch_assoc();
 
 // set item as read
 if ($row["status"] == RI_UNREAD) {
-	$cmd = "UPDATE reader_items SET status='read' WHERE readerId=".$readerId." AND feedId=".$feedId." and itemId='".$itemId."' and status='unread'";
-	$ok = $dbh->query($cmd);
+	$cmd = "UPDATE reader_items SET status='read' WHERE readerId=? AND feedId=? and itemId=? and status='unread'";
+    $stm = $dbh->prepare($cmd);
+    $stm->bind_param('iis', $readerId, $feedId, $itemId);
+    $ok = $stm->execute();
 	if (!$ok) echo "Warning: Unable to set as read. readerId:".$readerId." feedId:".$feedId." itemId:".$itemId;
+    $stm->close();
 }
 
 // display item

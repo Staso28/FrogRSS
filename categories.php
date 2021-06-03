@@ -14,6 +14,7 @@
 require_once("functions.php");
 require_once("dbconn.php");
 require_once("check_session.php");
+//mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 if (isset($_GET['id'])) {
 	$categoryId = sprintf("%d",$_GET['id']);
@@ -36,9 +37,12 @@ if(isset($_REQUEST['doNew'])) {
 	}
 	// get max ordering and check for duplicate name
 	if ($newOK) {
-		$cmd = "SELECT max(ordering) as m, sum(if(name='".$catName."',1,0)) as dupl ".
-			"FROM categories WHERE readerId=".$readerId;
-		$res = $dbh->query($cmd);
+		$cmd = "SELECT max(ordering) as m, sum(if(name=?,1,0)) as dupl FROM categories WHERE readerId=?";
+        $stm = $dbh->prepare($cmd);
+        $stm->bind_param('si', $catName, $readerId);
+        $stm->execute();
+        $res = $stm->get_result();
+        $stm->close();
 		$row = $res->fetch_assoc();
 		$maxOrder = $row["m"];
 		if ($row["dupl"] > 0) {
@@ -48,54 +52,83 @@ if(isset($_REQUEST['doNew'])) {
 	}
 
 	if ($newOK) {
-		$cmd = "INSERT INTO categories SET id=NULL, readerId=".$readerId.", name='".$catName."', ordering=".($maxOrder+1);
-		$ok = $dbh->query($cmd);
+        $maxOrder++;
+		$cmd = "INSERT INTO categories SET id=NULL, readerId=?, name=?, ordering=?";
+        $stm = $dbh->prepare($cmd);
+        $stm->bind_param('isi', $readerId, $catName, $maxOrder);
+        $ok = $stm->execute();
 		if (!$ok) $newErr = "Error while creating category";
+        $stm->close();
 	}
 }
 else if ($action == "up" and $categoryId) {
-	$cmd = "select ordering FROM categories WHERE id=".$categoryId;
-	$res = $dbh->query($cmd);
-	$row = $res->fetch_assoc();
-	$myOrder = $row["ordering"];
-	$cmd = "select id, ordering FROM categories WHERE readerId=".$readerId." AND ordering < ".$myOrder." ORDER BY ordering desc limit 1";
-	$res = $dbh->query($cmd);
+    $c = _get_category($dbh, $categoryId);
+	$myOrder = $c["ordering"];
+	$stm = $dbh->prepare("SELECT id, ordering FROM categories WHERE readerId=? AND ordering < ? ORDER BY ordering desc limit 1");
+    $stm->bind_param('ii', $readerId, $myOrder);
+    $stm->execute();
+    $res = $stm->get_result();
+    $stm->close();
 	$other = $res->fetch_assoc();
 	if ($other) {
-		$dbh->query("update categories set ordering = ".$other["ordering"]." where id=".$categoryId);
-		$dbh->query("update categories set ordering = ".$myOrder." where id=".$other["id"]);
+        // change ordering values
+		$stm = $dbh->prepare("update categories set ordering = ? where id=?");
+        $newOrder = $other["ordering"];
+        $cId = $categoryId;
+        $stm->bind_param('ii', $newOrder, $cId);
+        $stm->execute();
+        $newOrder = $myOrder;
+        $cId = $other["id"];
+        $stm->execute();
+        $stm->close();
 	}
 }
 else if ($action == "down" and $categoryId) {
-	$cmd = "select ordering FROM categories WHERE id=".$categoryId;
-	$res = $dbh->query($cmd);
-	$row = $res->fetch_assoc();
-	$myOrder = $row["ordering"];
-	$cmd = "select id, ordering FROM categories WHERE readerId=".$readerId." AND ordering > ".$myOrder." ORDER BY ordering asc limit 1";
-	$res = $dbh->query($cmd);
+    $c = _get_category($dbh, $categoryId);
+	$myOrder = $c["ordering"];
+	$stm = $dbh->prepare("SELECT id, ordering FROM categories WHERE readerId=? AND ordering > ? ORDER BY ordering limit 1");
+    $stm->bind_param('ii', $readerId, $myOrder);
+    $stm->execute();
+    $res = $stm->get_result();
+    $stm->close();
 	$other = $res->fetch_assoc();
 	if ($other) {
-		$dbh->query("update categories set ordering = ".$other["ordering"]." where id=".$categoryId);
-		$dbh->query("update categories set ordering = ".$myOrder." where id=".$other["id"]);
+        // change ordering values
+		$stm = $dbh->prepare("update categories set ordering = ? where id=?");
+        $newOrder = $other["ordering"];
+        $cId = $categoryId;
+        $stm->bind_param('ii', $newOrder, $cId);
+        $stm->execute();
+        $newOrder = $myOrder;
+        $cId = $other["id"];
+        $stm->execute();
+        $stm->close();
 	}
 }
 else if ($action == "del" and $categoryId) {
-	$cmd = "SELECT count(*) as poc FROM reader_feeds WHERE readerId=".$readerId." and categoryId=".$categoryId;
-	$res = $dbh->query($cmd);
+	$stm = $dbh->prepare("SELECT count(*) as poc FROM reader_feeds WHERE readerId=? and categoryId=?");
+    $stm->bind_param('ii', $readerId, $categoryId);
+    $stm->execute();
+    $res = $stm->get_result();
+    $stm->close();
 	$row = $res->fetch_assoc();
 	if ($row["poc"] > 0) {
 		echo "<font color=\"red\">Unable to delete category with assigned feeds. Please move feeds to different category and try again.</font><p>";
 	}
 	else {
-		$cmd = "DELETE FROM categories WHERE id=".$categoryId;
-		$ok = $dbh->query($cmd);
+		$stm = $dbh->prepare("DELETE FROM categories WHERE id=?");
+        $stm->bind_param('i', $categoryId);
+        $ok = $stm->execute();
+        $stm->close();
 		if (!$ok) echo "<font color=\"red\">Error while deleting category....</font><p>";
 	}
 }
 
 
-$cmd = "select id, ordering, name from categories where readerId=".$readerId." order by ordering";
-$res = $dbh->query($cmd);
+$stm = $dbh->prepare("SELECT id, ordering, name from categories where readerId=? order by ordering");
+$stm->bind_param('i', $readerId);
+$stm->execute();
+$res = $stm->get_result();
 
 echo "<table width=\"400\">".
 	"<tr><td><b>Order</b></td>".

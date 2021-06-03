@@ -21,9 +21,6 @@ if(isset($_REQUEST['sub']))
     $stm->execute();
     $res = $stm->get_result();
 	
-	//$cmd = "select id from readers where login='".$a."'and cpasswd='".sha1($b)."'";
-//echo "cmd:".$cmd;
-	//$res = $dbh->query($cmd);
 	$result=$res->fetch_assoc();
 	if($result) {
 		$_SESSION["login"]="1";

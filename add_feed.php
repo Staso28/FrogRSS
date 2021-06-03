@@ -26,19 +26,25 @@ if(isset($_REQUEST['doSave'])) {
 		exit;
 	}
 	// mame uz v db takyto feed podla URL?
-	$cmd = "select id from feeds where url=\"".$furl."\"";
-	$res = $dbh->query($cmd);
+	$stm = $dbh->prepare("select id from feeds where url=?");
+    $stm->bind_param('s', $furl);
+    $stm->execute();
+	$res = $stm->get_result();
+    $stm->close();
 	$row = $res->fetch_assoc();
 	if ($row) {
 		$feedId = $row["id"];
 	} else {
 		// nemame tak ho vlozime
-		$cmd = "insert into feeds set id=null,name='".$ftitle."', url='".$furl."'";
-		$dbh->query($cmd);
+		$stm = $dbh->prepare("INSERT INTO feeds SET id=null,name=?, url=?");
+        $stm->bind_param('ss', $ftitle, $furl);
+        $stm->execute();
 		$feedId = $dbh->insert_id;
+        $stm->close();
 	}
-	$cmd = "insert into reader_feeds set readerId=".$readerId.", feedId=".$feedId.", categoryId=".$cat;
-	$ok = $dbh->query($cmd);
+	$stm = $dbh->prepare("INSERT INTO reader_feeds SET readerId=?, feedId=?, categoryId=?");
+    $stm->bind_param('iii', $readerId, $feedId, $cat);
+    $ok = $stm->execute();
 	if ($ok) {
 		echo "Feed added succesfully. <a href=\"feeds.php\">Back to feed list</a></body></html>";
 		exit;

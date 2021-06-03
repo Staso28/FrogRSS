@@ -20,7 +20,10 @@ function _check_db_input($inputString) {
 
 function _combo_options_categories($dbh, $readerId) {
 	$retVal="";
-	$res = $dbh->query("select id, name from categories where readerId=".$readerId." order by ordering");
+	$stm = $dbh->prepare("select id, name from categories where readerId=? order by ordering");
+    $stm->bind_param('i', $readerId);
+    $stm->execute();
+    $res = $stm->get_result();
 	while ($row = $res->fetch_assoc()) {
 		$retVal .= "<option value=\"".$row["id"]."\">".$row["name"]."</option>\n";
 	}
@@ -40,5 +43,14 @@ function _populate_reader_items($dbh) {
 	} else {
 		echo "ERROR inserting readers";
 	}
+}
+
+function _get_category($dbh, $categoryId) {
+	$stm = $dbh->prepare("SELECT id, ordering, name FROM categories WHERE id=?");
+    $stm->bind_param('i', $categoryId);
+    $stm->execute();
+    $res = $stm->get_result();
+    $stm->close();
+    return $res->fetch_assoc();
 }
 ?>

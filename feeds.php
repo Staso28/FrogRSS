@@ -62,7 +62,7 @@ $cmd = "SELECT c.name as cat_name, if(isnull(rf.feedName),f.name,rf.feedName) as
 	"LEFT JOIN categories c ON rf.categoryId=c.id ".
 	"LEFT JOIN reader_items ri ON ri.readerId=".$readerId." AND ri.feedId=f.id ".
 	"WHERE isnull(ri.status) or ri.status <> 'deleted' ".
-	"GROUP by f.id ORDER BY c.ordering, f.id";
+	"GROUP by f.id ORDER BY c.ordering, f.name";
 $res = $dbh->query($cmd);
 //if (!$res) echo $cmd;
 
