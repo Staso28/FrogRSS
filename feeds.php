@@ -40,20 +40,21 @@ if ($action == "allRead") {
 <tr><td>
 <h2>My feeds</h2>
 </td><td align="right" valign="top">
-<font size="4">
+<?php echo _fB(); ?>
 <a href="add_feed.php">[ Add RSS feed ]</a> 
 <a href="categories.php">[ Manage categories ]</a> 
-[ My profile ] 
-<a href="logout.php">Logout</a>
-</font>
+<a href="profile.php">[ My profile ]</a> 
+<a href="logout.php">[ Logout ]</a>
+<?php echo _fE(); ?>
 </td></tr>
 </table>
-<font size="4">
+<?php echo _fB(); ?>
 Actions: 
 <!--<a href="fetch_items.php">[ Fetch articles for all feeds ]</a> -->
 <a href="feeds.php?action=allRead">[ Mark all as Read ]</a>
-</font>
 <?php
+echo _fE();
+
 $cmd = "SELECT c.name as cat_name, if(isnull(rf.feedName),f.name,rf.feedName) as feed_name, url, rf.categoryId, f.id, ".
 	"sum(if(isnull(ri.itemId),0,1)) as itemCount, ".
 	"sum(if(!isnull(ri.itemId) and ri.status='unread',1,0)) as unreadCount ".

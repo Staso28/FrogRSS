@@ -1,4 +1,9 @@
 <?php
+function _err($str) {
+	echo "<font color=\"red\">".$str."</font>";
+	echo "<p>";
+	return 0;
+}
 function _fB($size = 4) {
     return "<font size=\"".$size."\">";
 }

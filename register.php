@@ -12,17 +12,12 @@
 require_once("dbconn.php");
 require_once("functions.php");
 
-function _err($str) {
-	echo "<font color=\"red\">".$str."</font>";
-	echo "<p>";
-	return 0;
-}
 
 function _set_starting_content($dbh, $readerId) {
 	$data = [
 		[ "Mac stuff", [ 33, 36, 48 ] ],
 		[ "PC stuff", [ 60 ] ],
-		[ "World news", [ 45 ] ]
+		[ "World news", [ 72 ] ]
 	];
 
 	$catOrder = 1;

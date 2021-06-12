@@ -30,7 +30,7 @@ if(isset($msg)) {
 
 </p>
 </form>
-<a href="register.php">Register</a>
+Don't have an account yet? <a href="register.php">Let's create one...</a>
 </center>
 </body>
 </html>
