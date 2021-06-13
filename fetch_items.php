@@ -24,8 +24,9 @@ $minRefreshPeriod = 300;
 // check if not running too often
 // naschval beriem min(fetchTime) - ak refreshujeme vsetky feedy tak staci ze najdem jeden feed,
 // ktory este nebol refreshnuty za poslednych $minRefreshPeriod sekund
-$cmd = "SELECT min(unix_timestamp(fetchTime)) as lastFetch, unix_timestamp(now()) as currTime FROM feeds";
+$cmd = "SELECT min(unix_timestamp(f.fetchTime)) as lastFetch, unix_timestamp(now()) as currTime FROM feeds f";
 if ($feedId) $cmd .= " WHERE id=".$feedId;
+else $cmd .= " WHERE EXISTS (SELECT 1 FROM reader_feeds rf WHERE rf.feedId=f.id)";
 $res = $dbh->query($cmd);
 $row = $res->fetch_assoc();
 if ($row["lastFetch"] && ($row["currTime"] - $row["lastFetch"]) < $minRefreshPeriod) {
@@ -37,10 +38,11 @@ if ($feedId) {
 	echo "<a href=\"show_items.php?feedId=".$feedId."\">&lt;&lt; Back to feed</a><p>";
 }
 
-// fetch feed list
-$cmd = "SELECT id, url, name FROM feeds";
-if ($feedId) $cmd .= " WHERE id=".$feedId;
-$cmd .= " ORDER BY id";
+// fetch feed list - only feeds which have some readers
+$cmd = "SELECT f.id, f.url, f.name FROM feeds f";
+if ($feedId) $cmd .= " WHERE f.id=".$feedId;
+else $cmd .= " WHERE EXISTS (SELECT 1 FROM reader_feeds rf WHERE rf.feedId=f.id)";
+$cmd .= " ORDER BY f.id";
 $res = $dbh->query($cmd);
 
 while ($row = $res->fetch_assoc()) {
