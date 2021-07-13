@@ -8,7 +8,7 @@
 <h2>Welcome to <b>FrogRSS</b>!</h2>
 This is a RSS aggregator built for using on vintage computers.
 <br>No Javascript, no SSL - just pure HTML and some images :)<p>
-It is based on ideas brought by excelent site <a href="http://frogfind.com">FrogFind!</a> and <a href="http://68k.news">68k.news</a>!
+It is based on ideas brought by excelent sites <a href="http://frogfind.com">FrogFind!</a> and <a href="http://68k.news">68k.news</a>!
 <h3>Login to FrogRSS</h3>
 <form action="loginprocess.php" method="POST">
 <table>
