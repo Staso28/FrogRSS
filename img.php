@@ -7,7 +7,11 @@ $raw_image = NULL;
 
 //get the image url
 if (isset( $_GET['i'] ) ) {
-    $url = $_GET[ 'i' ];
+    $url = $_GET['i'];
+	// if there are any other params add it to the URL - needed for reddit thumbnails
+	foreach ($_GET as $name => $value) {
+		if ($name != "i") $url .= "&".$name.'='.$value;
+	}
 } else {
     exit();
 }
@@ -21,7 +25,8 @@ if (substr( $url, 0, 4 ) != "http") {
 //we can only do jpg and png here
 if (strpos($url, ".jpg") > 0 || 
 	strpos($url, ".jpeg") > 0 ||
-	strpos($url, "thumbnails.lbry.com") > 0		// odysee.com thumbnail hack
+	strpos($url, "thumbnails.lbry.com") > 0	|| 	// odysee.com thumbnail hack
+	strpos($url, "ocdn.eu") > 0		// zive.sk thumbnail hack
 	) {
     $filetype = "jpg";
    $raw_image = imagecreatefromjpeg($url);
@@ -29,6 +34,12 @@ if (strpos($url, ".jpg") > 0 ||
     $filetype = "png";
     $raw_image = imagecreatefrompng($url);
 } else {
+	//echo "pozicia:".strpos($url, ".png");
+	exit();
+}
+
+if ($raw_image === false) {
+	echo "unable to create image";
 	exit();
 }
 
