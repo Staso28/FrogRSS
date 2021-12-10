@@ -23,19 +23,28 @@ if (substr( $url, 0, 4 ) != "http") {
 
 
 //we can only do jpg and png here
-if (strpos($url, ".jpg") > 0 || 
-	strpos($url, ".jpeg") > 0 ||
-	strpos($url, "thumbnails.lbry.com") > 0	|| 	// odysee.com thumbnail hack
-	strpos($url, "ocdn.eu") > 0		// zive.sk thumbnail hack
-	) {
-    $filetype = "jpg";
-   $raw_image = imagecreatefromjpeg($url);
+if (strpos($url, ".jpg") > 0 || strpos($url, ".jpeg") > 0) {
+	$filetype = "jpg";
+	$raw_image = imagecreatefromjpeg($url);
 } elseif (strpos($url, ".png") > 0) {
     $filetype = "png";
     $raw_image = imagecreatefrompng($url);
 } else {
-	//echo "pozicia:".strpos($url, ".png");
-	exit();
+	// unindentifiable extension - trying to figure out the file type
+	$size = getimagesize($url);
+	if ($size === false) exit();
+	if ($size['mime'] == 'image/jpg' || $size['mime'] == 'image/jpeg') {
+		$filetype = "jpg";
+		$raw_image = imagecreatefromjpeg($url);
+	} elseif ($size['mime'] == 'image/png') {
+		$filetype = "png";
+		$raw_image = imagecreatefrompng($url);
+	} elseif ($size['mime'] == 'image/webp') {
+		$filetype = "jpg";	// convert to jpg on output
+		$raw_image = imagecreatefromwebp($url);
+	} else {
+		exit();
+	}
 }
 
 if ($raw_image === false) {
