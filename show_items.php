@@ -21,7 +21,7 @@ if (isset($_GET['feedId'])) {
 $action = "";
 if (isset($_GET['action'])) {
 	$action = $_GET['action'];
-}
+} 
 $cmd = "SELECT f.name, rf.categoryId, f.fetchTime, c.name as catName ".
 	"FROM feeds f ".
 	"INNER JOIN reader_feeds rf ON f.id=rf.feedId AND rf.readerId=? ".
@@ -86,6 +86,10 @@ else if ($action == "unsub_ok") {
 	echo "<a href=\"feeds.php#cat_".$feedCatId."\">&lt;&lt; Back to feed list</a>";
 	exit;
 }
+// fetch new items
+else if ($action == "fetch") {
+	header("location:fetch_items.php?feedId=".$feedId);
+}
 
 
 echo "<h2>".$feedName."</h2>";
@@ -124,7 +128,12 @@ if ($action == "catChangeReq") {
 		exit;
 }
 
-echo "<p>";
+//echo "<p>"._fB();
+echo _fB()." &nbsp;&nbsp;&nbsp;<a href=\"show_items.php?feedId=".$feedId."&action=all_read\">[ Mark all as Read ]</a> "._fE();
+//echo "<p>";
+
+
+/*
 echo "<table width=\"100%\"><tr><td>"._fB();
 echo "Actions: ";
 echo "<a href=\"show_items.php?feedId=".$feedId."&action=all_read\">[ Mark all as Read ]</a> ";
@@ -133,10 +142,21 @@ echo _fE()."</td><td align=\"right\">"._fB();
 echo "<a href=\"show_items.php?feedId=".$feedId."&action=unsub\">[ Unsubscribe from Feed ]</a> ";
 echo "<a href=\"fetch_items.php?feedId=".$feedId."\">[ Fetch new articles ]</a>";
 echo _fE()."</td></tr></table>\n";
+*/
 echo "<p>";
 
 echo "<table width=\"100%\"><tr>".
-	"<td><small>Category: <b>".$categoryName."</b> (<a href=\"show_items.php?feedId=".$feedId."&action=catChangeReq\">Change</a>)</small></td>".
+	"<td>";
+echo "<form method=\"GET\"><input type=\"hidden\" name=\"feedId\" value=\"".$feedId."\">";
+echo "<select name=\"action\">";
+echo "  <option value=\"choose\">-- Choose other action --</option>";
+echo "  <option value=\"all_unread\">Mark all as Unread</option>";
+echo "  <option value=\"unsub\">Unsubscribe from Feed</option>";
+echo "  <option value=\"fetch\">Fetch new articles</option>";
+echo "  <option value=\"catChangeReq\">Change category (".$categoryName.")</option>";
+echo "</select> <input type=\"submit\" name=\"d\" value=\"Do it!\"></form>";
+//echo "<small>Category: <b>".$categoryName."</b> (<a href=\"show_items.php?feedId=".$feedId."&action=catChangeReq\">Change</a>)</small>";
+echo "</td>".
 	"<td align=\"right\"><small>Last refresh: ".$feedFetchTime."</small></td>".
 	"</tr></table><p>"._fB();
 
@@ -166,10 +186,11 @@ while ($row = $res->fetch_assoc()) {
 	echo "<li>";
 	$col = ($row["status"] == RI_UNREAD) ? ("darkgreen") : ("blue");
 	if ($row["status"] == RI_UNREAD)  echo "<b>";
-	echo "<a href=\"item.php?feedId=".$feedId."&itemId=".$row["id"]."\"><font color=\"$col\">".$row["title"]."</font></a> | ";
+	//echo "<a href=\"item.php?feedId=".$feedId."&itemId=".$row["id"]."\"><font color=\"$col\">".$row["title"]."</font></a> | ";
+	echo "<a href=\"item.php?feedId=".$feedId."&itemId=".$row["id"]."\"><font color=\"$col\">".$row["title"]."</font></a> ";
 	if ($row["status"] == RI_UNREAD) echo "</b>";
-	echo "<a href=\"http://frogfind.com/read.php?a=".$row["permalink"]."\" target=\"_blank\" rel=\"noopener noreferrer\" title=\"Open using FrogFind!\">[F]</a> ";
-	echo "<a href=\"".$row["permalink"]."\" target=\"_blank\" rel=\"noopener noreferrer\" title=\"Open original URL\">[O]</a> ";
+	//echo "<a href=\"http://frogfind.com/read.php?a=".$row["permalink"]."\" target=\"_blank\" rel=\"noopener noreferrer\" title=\"Open using FrogFind!\">[F]</a> ";
+	//echo "<a href=\"".$row["permalink"]."\" target=\"_blank\" rel=\"noopener noreferrer\" title=\"Open original URL\">[O]</a> ";
 	echo "<small>(posted on ".$row["publishDate"].")</small> ";
 	echo "</li>\n";
 }
