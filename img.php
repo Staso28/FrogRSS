@@ -17,15 +17,19 @@ if (substr( $url, 0, 4 ) != "http") {
     exit();
 }
 
+
 //we can only do jpg and png here
-if (strpos($url, ".jpg") || strpos($url, ".jpeg") === true) {
+if (strpos($url, ".jpg") > 0 || 
+	strpos($url, ".jpeg") > 0 ||
+	strpos($url, "thumbnails.lbry.com") > 0		// odysee.com thumbnail hack
+	) {
     $filetype = "jpg";
-    $raw_image = imagecreatefromjpeg($url);
-} elseif (strpos($url, ".png") === true) {
+   $raw_image = imagecreatefromjpeg($url);
+} elseif (strpos($url, ".png") > 0) {
     $filetype = "png";
     $raw_image = imagecreatefrompng($url);
 } else {
-    exit();
+	exit();
 }
 
 $raw_imagex = imagesx($raw_image);

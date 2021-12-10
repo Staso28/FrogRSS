@@ -71,6 +71,8 @@ if(isset($_REQUEST['doPreview'])) {
 	if($ok) {
 		echo "<br>Feed title: <input type=\"text\" size=\"40\" name=\"ftitle\" value=\"".$feed->get_title()."\">";
 		echo "<br>Feed link:<input type=\"text\" size=\"40\" name=\"furl\" value=\"".$feed->subscribe_url()."\">";
+		//$base_url = $feed->get_base();
+		//echo "<br>Feed base URL:<a href=\"".$base_url."\">".$base_url."</a>";
 		echo "<p>Newest articles:";
 	    echo "<ul>";
 		$i = 1;
